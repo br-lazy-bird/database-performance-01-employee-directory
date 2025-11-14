@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card } from '../Card/Card.tsx';
-import { LoadingSpinner } from '../LoadingSpinner/LoadingSpinner.tsx';
-import { ErrorDisplay } from '../ErrorDisplay/ErrorDisplay.tsx';
+import { Card } from '../Card';
+import { LoadingSpinner } from '../LoadingSpinner';
+import { ErrorDisplay } from '../ErrorDisplay';
 import './SystemLayout.css';
 
 interface SystemLayoutProps {

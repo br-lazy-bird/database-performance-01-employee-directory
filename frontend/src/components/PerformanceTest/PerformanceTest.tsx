@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { PerformanceTestState, ProgressData, FinalResult } from '../../types/performance';
-import { SystemLayout } from '../../shared-components/SystemLayout/SystemLayout.tsx';
-import { MetricsFooter } from '../../shared-components/MetricsFooter/MetricsFooter.tsx';
-import TestDescription from './TestDescription.tsx';
-import TestControls from './TestControls.tsx';
-import ProgressDisplay from './ProgressDisplay.tsx';
+import { SystemLayout } from '../../shared-components/SystemLayout';
+import { MetricsFooter } from '../../shared-components/MetricsFooter';
+import TestDescription from './TestDescription';
+import TestControls from './TestControls';
+import ProgressDisplay from './ProgressDisplay';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
