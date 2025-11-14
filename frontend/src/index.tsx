@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./shared-styles/base.css";
 import "./index.css";
 import App from "./App.tsx";
 

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { PerformanceTestState, ProgressData, FinalResult } from '../../types/performance';
+import { SystemLayout } from '../../shared-components/SystemLayout/SystemLayout.tsx';
+import { MetricsFooter } from '../../shared-components/MetricsFooter/MetricsFooter.tsx';
 import TestDescription from './TestDescription.tsx';
 import TestControls from './TestControls.tsx';
 import ProgressDisplay from './ProgressDisplay.tsx';
-import ResultsDisplay from './ResultsDisplay.tsx';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
@@ -65,32 +66,42 @@ const PerformanceTest: React.FC = () => {
   };
 
   return (
-    <div className="card">
-      <h1 className="title">
-        Employee Search Performance Test
-      </h1>
-
-      <TestDescription />
-
+    <SystemLayout
+      title="Employee Search Performance Test"
+      description={<TestDescription />}
+      loading={false}
+      error={state.status === 'error' ? state.message : null}
+      metrics={
+        state.status === 'completed' && state.result ? (
+          <MetricsFooter
+            metrics={[
+              { label: 'Total Time', value: state.result.total_execution_time_ms, unit: 'ms' },
+              { label: 'P50 (Median)', value: state.result.p50_ms, unit: 'ms' },
+              { label: 'P95', value: state.result.p95_ms, unit: 'ms' },
+              { label: 'P99', value: state.result.p99_ms, unit: 'ms' }
+            ]}
+          />
+        ) : undefined
+      }
+    >
       <TestControls
         onStart={startPerformanceTest}
         isRunning={state.status === 'running'}
       />
 
-      {state.status === 'running' && (
+      {state.status === 'running' && state.progress && (
         <ProgressDisplay progress={state.progress} />
       )}
 
       {state.status === 'completed' && (
-        <ResultsDisplay result={state.result} />
-      )}
-
-      {state.status === 'error' && (
-        <div className="error">
-          <p>Error: {state.message}</p>
+        <div className="resultsContainer">
+          <h2 className="resultsTitle">Test Completed</h2>
+          <p style={{ textAlign: 'center', color: '#64748b', marginTop: '12px' }}>
+            Successfully executed {state.result?.queries_executed} queries
+          </p>
         </div>
       )}
-    </div>
+    </SystemLayout>
   );
 };
 
