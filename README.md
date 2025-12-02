@@ -41,6 +41,34 @@ The system will:
 
 ## System Architecture
 
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         React Frontend                          │
+│                      (http://localhost:3000)                    │
+│                  Search UI + Performance Test                   │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             │ HTTP Request
+                             │ GET /search?first_name=John&last_name=Smith
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      FastAPI Backend                            │
+│                      (http://localhost:8000)                    │
+│                   SQLAlchemy ORM + REST API                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             │ SQL Query
+                             │ SELECT * FROM employees
+                             │ WHERE first_name = ? AND last_name = ?
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      PostgreSQL Database                        │
+│                      (localhost:5432)                           │
+│                   1,000,000+ employee records                   │
+│                   Without indexes: Sequential scan              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ### Technology Stack
 
 **Frontend:** React 18 with TypeScript
