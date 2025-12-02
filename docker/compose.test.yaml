@@ -22,7 +22,7 @@ services:
     build: ../backend
     container_name: employee_directory_test_runner
     environment:
-      - DATABASE_URL=postgresql://test_user:test_password@test-db:5432/test_employee_directory
+      - DATABASE_URL=postgresql+psycopg://test_user:test_password@test-db:5432/test_employee_directory
       - TEST_DB_HOST=test-db
       - TEST_DB_PORT=5432
     depends_on:
