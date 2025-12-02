@@ -146,9 +146,14 @@ make db-shell
 
 The project includes automated integration tests for the backend API.
 
-**Run all tests:**
+**Run tests (fast - uses cached images):**
 ```bash
 make test
+```
+
+**Rebuild and test (after code changes):**
+```bash
+make test-build
 ```
 
 Tests automatically manage an isolated test database on port 5433 with 10,000 employee records.
