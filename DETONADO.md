@@ -302,4 +302,45 @@ You've successfully completed the optimization when:
 
 ---
 
+## Production Considerations
+
+### Moving Beyond This Implementation
+
+**Use Partial Indexes for Specific Queries:**
+```sql
+-- Index only active employees
+CREATE INDEX idx_active_employees_name
+ON employees (first_name, last_name)
+WHERE status = 'active';
+
+-- Index only recent hires
+CREATE INDEX idx_recent_hires_name
+ON employees (first_name, last_name)
+WHERE hire_date > '2020-01-01';
+```
+Partial indexes are smaller and faster for queries matching the WHERE condition.
+
+**Implement Covering Indexes:**
+```sql
+-- Include frequently selected columns in the index
+CREATE INDEX idx_employees_search_covering
+ON employees (first_name, last_name)
+INCLUDE (email, department);
+```
+Covering indexes allow index-only scans without accessing the table, further improving performance.
+
+**Monitor Query Performance:**
+- Use `pg_stat_statements` extension to track slow queries
+- Set up alerts for queries exceeding performance thresholds
+- Regularly review and optimize the most expensive queries
+- Docs: https://www.postgresql.org/docs/current/pgstatstatements.html
+
+**Index Maintenance:**
+- Indexes can become bloated over time - use `REINDEX` periodically
+- Monitor index usage with `pg_stat_user_indexes`
+- Drop unused indexes to reduce write overhead
+- Schedule maintenance during low-traffic periods
+
+---
+
 **Congratulations!** You've successfully optimized the Employee Directory by adding database indexes. This same technique applies to any database-backed application where search performance is critical.
