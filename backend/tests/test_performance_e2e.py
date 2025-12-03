@@ -4,9 +4,10 @@ Tests the complete flow: API -> Service -> Repository -> Database
 """
 
 import json
+import httpx
 
 
-def test_performance_search_e2e(client):
+def test_performance_search_e2e(api_url):
     """
     E2E test for /performance/search endpoint.
 
@@ -18,73 +19,76 @@ def test_performance_search_e2e(client):
     """
 
     # Make request to performance endpoint
-    with client.stream("GET", "performance/search") as response:
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
+    with httpx.Client(timeout=30.0) as client:
+        with client.stream("GET", f"{api_url}/performance/search") as response:
+            if response.status_code != 200:
+                print(f"\nError response: {response.text}")
+            assert response.status_code == 200, f"Expected 200, got {response.status_code}"
+            assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
 
-        progress_updates = []
-        final_result = None
+            progress_updates = []
+            final_result = None
 
-        # Parse SSE stream
-        for line in response.iter_lines():
-            line = line.strip()
+            # Parse SSE stream
+            for line in response.iter_lines():
+                line = line.strip()
 
-            # SSE format: "data: {json}\n\n"
-            if line.startswith("data: "):
-                json_str = line[6:]  # Remove "data: " prefix
-                data = json.loads(json_str)
+                # SSE format: "data: {json}\n\n"
+                if line.startswith("data: "):
+                    json_str = line[6:]  # Remove "data: " prefix
+                    data = json.loads(json_str)
 
-                if data.get("status") == "running":
-                    progress_updates.append(data)
-                elif data.get("status") == "completed":
-                    final_result = data
+                    if data.get("status") == "running":
+                        progress_updates.append(data)
+                    elif data.get("status") == "completed":
+                        final_result = data
 
-        assert (
-            len(progress_updates) == 100
-        ), f"Expected 100 progress updates, got {len(progress_updates)}"
-        print(f"\nSUCCESS: Received all 100 progress updates")
-
-        # Validate progress update structure
-        for i, update in enumerate(progress_updates, start=1):
             assert (
-                update["progress"] == i
-            ), f"Progress {i}: expected progress={i}, got {update['progress']}"
-            assert update["total"] == 100
-            assert update["percentage"] == round((i / 100) * 100, 1)
-            assert "current_query_time" in update
-            assert "total_time" in update
-            assert "results_count" in update
-            assert update["status"] == "running"
+                len(progress_updates) == 100
+            ), f"Expected 100 progress updates, got {len(progress_updates)}"
+            print(f"\nSUCCESS: Received all 100 progress updates")
 
-        print("SUCCESS: All progress updates have correct structure")
+            # Validate progress update structure
+            for i, update in enumerate(progress_updates, start=1):
+                assert (
+                    update["progress"] == i
+                ), f"Progress {i}: expected progress={i}, got {update['progress']}"
+                assert update["total"] == 100
+                assert update["percentage"] == round((i / 100) * 100, 1)
+                assert "current_query_time" in update
+                assert "total_time" in update
+                assert "results_count" in update
+                assert update["status"] == "running"
 
-        # Validate final result exists
-        assert final_result is not None, "Final result not received"
-        print("SUCCESS: Final result received")
+            print("SUCCESS: All progress updates have correct structure")
 
-        # Validate final result structure
-        assert final_result["status"] == "completed"
-        assert final_result["queries_executed"] == 100
-        assert (
-            final_result["results_count"] >= 10
-        ), f"Expected at least 10 John Smiths, got {final_result['results_count']}"
+            # Validate final result exists
+            assert final_result is not None, "Final result not received"
+            print("SUCCESS: Final result received")
 
-        # Validate percentile metrics exist and are reasonable
-        assert "p50_ms" in final_result
-        assert "p95_ms" in final_result
-        assert "p99_ms" in final_result
-        assert "total_execution_time_ms" in final_result
+            # Validate final result structure
+            assert final_result["status"] == "completed"
+            assert final_result["queries_executed"] == 100
+            assert (
+                final_result["results_count"] >= 10
+            ), f"Expected at least 10 John Smiths, got {final_result['results_count']}"
 
-        # Validate percentile ordering (p50 <= p95 <= p99)
-        assert final_result["p50_ms"] <= final_result["p95_ms"], "p50 should be <= p95"
-        assert final_result["p95_ms"] <= final_result["p99_ms"], "p95 should be <= p99"
+            # Validate percentile metrics exist and are reasonable
+            assert "p50_ms" in final_result
+            assert "p95_ms" in final_result
+            assert "p99_ms" in final_result
+            assert "total_execution_time_ms" in final_result
 
-        print(f"\nSUCCESS: Final result validation passed")
-        print(f"  - Queries executed: {final_result['queries_executed']}")
-        print(f"  - Results count: {final_result['results_count']}")
-        print(f"  - Total time: {final_result['total_execution_time_ms']}ms")
-        print(f"  - p50: {final_result['p50_ms']}ms")
-        print(f"  - p95: {final_result['p95_ms']}ms")
-        print(f"  - p99: {final_result['p99_ms']}ms")
+            # Validate percentile ordering (p50 <= p95 <= p99)
+            assert final_result["p50_ms"] <= final_result["p95_ms"], "p50 should be <= p95"
+            assert final_result["p95_ms"] <= final_result["p99_ms"], "p95 should be <= p99"
 
-        print("\nE2E TEST PASSED: Performance search endpoint working correctly!")
+            print(f"\nSUCCESS: Final result validation passed")
+            print(f"  - Queries executed: {final_result['queries_executed']}")
+            print(f"  - Results count: {final_result['results_count']}")
+            print(f"  - Total time: {final_result['total_execution_time_ms']}ms")
+            print(f"  - p50: {final_result['p50_ms']}ms")
+            print(f"  - p95: {final_result['p95_ms']}ms")
+            print(f"  - p99: {final_result['p99_ms']}ms")
+
+            print("\nE2E TEST PASSED: Performance search endpoint working correctly!")

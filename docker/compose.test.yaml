@@ -18,15 +18,29 @@ services:
       timeout: 5s
       retries: 5
 
+  test-backend:
+    build: ../backend
+    container_name: employee_directory_test_backend
+    environment:
+      - DATABASE_URL=postgresql+psycopg://test_user:test_password@test-db:5432/test_employee_directory
+      - PYTHON_ENV=test
+    depends_on:
+      test-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   test-runner:
     build: ../backend
     container_name: employee_directory_test_runner
     environment:
-      - DATABASE_URL=postgresql+psycopg://test_user:test_password@test-db:5432/test_employee_directory
-      - TEST_DB_HOST=test-db
-      - TEST_DB_PORT=5432
+      - PYTHON_ENV=test
+      - API_URL=http://test-backend:8000
     depends_on:
-      test-db:
+      test-backend:
         condition: service_healthy
     volumes:
       - ../backend:/app
