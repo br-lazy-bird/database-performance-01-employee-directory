@@ -30,17 +30,7 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install openai
 
-      
-      - name: Debug OpenAI secret presence
-        run: |
-          if [ -z "${{ secrets.CHATGPT_KEY }}" ]; then
-          echo "CHATGPT_KEY is NOT available"
-          else
-          echo "CHATGPT_KEY is available"
-          fi
-
-
-      - name: Test OpenAI connection
+      - name: Generate AI review
         env:
           CHATGPT_KEY: ${{ secrets.CHATGPT_KEY }}
         run: |
@@ -50,25 +40,67 @@ jobs:
 
           client = OpenAI(api_key=os.environ["CHATGPT_KEY"])
 
+          with open("diff.txt") as f:
+              diff = f.read()
+
+          if not diff.strip():
+              print("No changes to review")
+              exit(0)
+
+          prompt = f"""
+          You are a Senior Software Engineer reviewing a pull request.
+
+          Project context:
+          - This repository is part of the Lazy Bird project.
+          - Lazy Bird is a collection of deliberately broken backend systems built for learning and practice.
+          - Each system contains specific architectural, performance, or design flaws on purpose.
+          - Pull requests fix ONE problem at a time, incrementally.
+          - Code is NOT expected to be production-ready after each PR.
+
+          Current broken system description:
+          - System with a poor performance due to the lack of database indexes.
+
+          Reviewer mindset:
+          - Treat this PR as one step in an incremental learning sequence.
+          - Assume some non-optimal code may be intentional.
+          - Do NOT suggest large refactors or unrelated improvements.
+          - Focus on structure, architecture boundaries, and code cleanliness.
+          - Only point out issues that would block or complicate future incremental steps.
+
+          Review guidelines:
+          - Be pragmatic and concise.
+          - Explain concerns only when they impact maintainability or learning value.
+          - Avoid performance optimizations unless they directly relate to structure or clarity.
+
+          Here is the git diff to review:
+          {diff}
+          """
+
           response = client.responses.create(
               model="gpt-4.1-mini",
-              input="Reply with exactly: OpenAI connection OK"
+              input=prompt
           )
 
-          print("OpenAI response:")
-          print(response.output_text)
+          review = response.output_text
+
+          with open("review.txt", "w") as f:
+              f.write(review)
           EOF
 
-      - name: Post test comment
+      - name: Post AI review comment
         uses: actions/github-script@v7
         with:
           script: |
+            const fs = require('fs');
+
+            if (!fs.existsSync('review.txt')) return;
+
+            const review = fs.readFileSync('review.txt', 'utf8').trim();
+            if (!review) return;
+
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: "🤖 Diff generated successfully."
+              body: "🤖 **AI Code Review — Lazy Bird**\n\n" + review
             });
-
-
-
