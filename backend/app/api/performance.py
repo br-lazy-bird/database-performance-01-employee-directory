@@ -56,3 +56,4 @@ async def check_search_performance(db: Session = Depends(get_db)) -> StreamingRe
             status_code=500,
             detail="An unexpected error occurred during performance test",
         ) from e
+    
