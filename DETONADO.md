@@ -343,4 +343,4 @@ Covering indexes allow index-only scans without accessing the table, further imp
 
 ---
 
-**Congratulations!** You've successfully optimized the Employee Directory by adding database indexes. This same technique applies to any database-backed application where search performance is critical.
+**Congratulations!** You've successfully optimized the Employee Directory by adding database indexes.
