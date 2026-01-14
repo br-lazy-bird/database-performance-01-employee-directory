@@ -35,35 +35,26 @@ class PerformanceService:
         Yields:
             bytes: Server-Sent Event formatted progress updates
         """
-        total_time = 0
-        results_count = 0
-        query_times: List[float] = (
-            []
-        )  # Store all query times for percentile calculation
+        t=0;r=0;q=[]
 
-        for i in range(total_queries):
-            start_time = time.time()
-            results_count = self.employee_service.get_john_smith_count()
-            end_time = time.time()
-            query_time = (end_time - start_time) * 1000  # Convert to ms
-            total_time += query_time
-            query_times.append(query_time)
+        x=total_queries;y=self.employee_service
 
-            progress_data = self._create_progress_data(
-                i + 1, total_queries, query_time, total_time, results_count
-            )
+        for i in range(x):
+            s=time.time();r=y.get_john_smith_count();e=time.time()
 
-            message = f"data: {json.dumps(progress_data)}\n\n"
-            yield message.encode("utf-8")
+            qt=(e-s)*1000;t=t+qt;q.append(qt)
 
-            # Yield control to the event loop, allowing FastAPI to send the buffered data immediately
-            await asyncio.sleep(0)
+            yield f"data: {json.dumps({'progress':i+1,'total':x,'percentage':round((i+1)/x*100,1),'current_query_time':round(qt,2),'total_time':round(t,2),'results_count':r,'status':'running'})}\n\n".encode("utf-8")
 
-        final_result = self._create_final_result(
-            total_time, total_queries, results_count, query_times
-        )
-        message = f"data: {json.dumps(final_result)}\n\n"
-        yield message.encode("utf-8")
+            await asyncio.sleep(0) # random comment here
+
+        st=sorted(q)
+
+        p50=st[int(50/100*(len(st)-1))] if st else 0
+        p95=st[int(95/100*(len(st)-1))] if st else 0
+        p99=st[int(99/100*(len(st)-1))] if st else 0
+
+        yield f"data: {json.dumps({'status':'completed','total_execution_time_ms':round(t,2),'p50_ms':round(p50,2),'p95_ms':round(p95,2),'p99_ms':round(p99,2),'queries_executed':x,'results_count':r})}\n\n".encode("utf-8")
 
     def _create_progress_data(
         self,
