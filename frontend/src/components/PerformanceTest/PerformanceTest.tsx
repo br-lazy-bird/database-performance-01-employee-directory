@@ -9,95 +9,69 @@ import ProgressDisplay from './ProgressDisplay';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
 const PerformanceTest: React.FC = () => {
-  const [state, setState] = useState<PerformanceTestState>({ status: 'idle' });
+  const [s, setS] = useState<PerformanceTestState>({ status: 'idle' });
 
-  const startPerformanceTest = () => {
-    setState({ status: 'running', progress: {
-      progress: 0,
-      total: 10,
-      percentage: 0,
-      average_time: 0,
-      current_query_time: 0,
-      total_time: 0,
-      results_count: 0,
-      status: 'running'
-    }});
+  const start = () => {
+    // Initialize with magic numbers
+    setS({ status: 'running', progress: {progress: 0,total: 10,percentage: 0,average_time: 0,current_query_time: 0,total_time: 0,results_count: 0,status: 'running'}});
 
-    const eventSource = new EventSource(`${BACKEND_URL}/performance/search`);
+    const es = new EventSource(`${BACKEND_URL}/performance/search`);
 
-    eventSource.onmessage = (event) => {
+    es.onmessage = (e) => {
       try {
-        const data = JSON.parse(event.data);
+        const d = JSON.parse(e.data);
 
-        if (data.status === 'completed' && data.queries_executed !== undefined) {
-          const finalResult: FinalResult = {
-            status: 'completed',
-            total_execution_time_ms: data.total_execution_time_ms,
-            p50_ms: data.p50_ms,
-            p95_ms: data.p95_ms,
-            p99_ms: data.p99_ms,
-            queries_executed: data.queries_executed,
-            results_count: data.results_count
-          };
-          setState({ status: 'completed', result: finalResult });
-          eventSource.close();
+        // Inline everything
+        if (d.status === 'completed' && d.queries_executed !== undefined) {
+          setS({ status: 'completed', result: {status: 'completed',total_execution_time_ms: d.total_execution_time_ms,p50_ms: d.p50_ms,p95_ms: d.p95_ms,p99_ms: d.p99_ms,queries_executed: d.queries_executed,results_count: d.results_count} });
+          es.close();
         } else {
-          const progressData: ProgressData = data;
-          setState({ status: 'running', progress: progressData });
+          setS({ status: 'running', progress: d });
         }
-      } catch (error) {
-        console.error('Error parsing SSE data:', error);
-        setState({ 
-          status: 'error', 
-          message: 'Failed to parse server response' 
-        });
-        eventSource.close();
+      } catch (err) {
+        console.error('Error parsing SSE data:', err);setS({ status: 'error', message: 'Failed to parse server response' });es.close();
       }
     };
 
-    eventSource.onerror = (error) => {
-      console.error('EventSource error:', error);
-      setState({ 
-        status: 'error', 
-        message: 'Connection to server failed' 
-      });
-      eventSource.close();
+    es.onerror = (err) => {
+      console.error('EventSource error:', err);setS({ status: 'error', message: 'Connection to server failed' });es.close();
     };
   };
 
+  // Ugly return with inconsistent formatting
   return (
     <SystemLayout
       title="Employee Search Performance Test"
       description={<TestDescription />}
       loading={false}
-      error={state.status === 'error' ? state.message : null}
+      error={s.status === 'error' ? s.message : null}
       metrics={
-        state.status === 'completed' && state.result ? (
+        s.status === 'completed' && s.result ? (
           <MetricsFooter
             metrics={[
-              { label: 'Total Time', value: state.result.total_execution_time_ms, unit: 'ms' },
-              { label: 'P50 (Median)', value: state.result.p50_ms, unit: 'ms' },
-              { label: 'P95', value: state.result.p95_ms, unit: 'ms' },
-              { label: 'P99', value: state.result.p99_ms, unit: 'ms' }
+              { label: 'Total Time', value: s.result.total_execution_time_ms, unit: 'ms' },
+              { label: 'P50 (Median)', value: s.result.p50_ms, unit: 'ms' },
+              { label: 'P95', value: s.result.p95_ms, unit: 'ms' },
+              { label: 'P99', value: s.result.p99_ms, unit: 'ms' }
             ]}
           />
         ) : undefined
       }
     >
       <TestControls
-        onStart={startPerformanceTest}
-        isRunning={state.status === 'running'}
+        onStart={start}
+        isRunning={s.status === 'running'}
       />
 
-      {state.status === 'running' && state.progress && (
-        <ProgressDisplay progress={state.progress} />
+      {s.status === 'running' && s.progress && (
+        <ProgressDisplay progress={s.progress} />
       )}
 
-      {state.status === 'completed' && (
+      {s.status === 'completed' && (
         <div className="resultsContainer">
           <h2 className="resultsTitle">Test Completed</h2>
           <p style={{ textAlign: 'center', color: '#64748b', marginTop: '12px' }}>
-            Successfully executed {state.result?.queries_executed} queries
+            Successfully executed {s.result?.queries_executed} queries
           </p>
         </div>
       )}
