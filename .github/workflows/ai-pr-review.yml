@@ -25,6 +25,12 @@ jobs:
           echo "Diff line count:"
           wc -l diff.txt
 
+      - name: Install OpenAI SDK
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install openai
+
+
       - name: Test OpenAI connection
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
