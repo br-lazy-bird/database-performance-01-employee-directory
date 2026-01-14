@@ -1,156 +1,58 @@
 """
-Service for performance APIs.
+Endpoints to check performance.
 """
 
-import asyncio
-import json
-import time
 import logging
-from typing import AsyncGenerator, List
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
-from app.services.employee_search import EmployeeSearchService
+from app.core.database import get_db
+from app.services.performance import PerformanceService
 
 logger = logging.getLogger(__name__)
 
+router = APIRouter(prefix="/performance", tags=["Performance"])
 
-class PerformanceService:
+
+@router.get("/search")
+async def check_search_performance(db: Session = Depends(get_db)) -> StreamingResponse:
     """
-    Database performance services.
+    Executes 100 search queries and stream progress updates
+
+    Returns:
+      Server-Set Events (SSE) stream with real-time progress
+
+    Raises:
+        HTTPException: 500 if database error occurs
     """
 
-    def __init__(self, db: Session):
-        self.db = db
-        self.employee_service = EmployeeSearchService(db)
+    try:
+        performance_service = PerformanceService(db)
+        progress_generator = performance_service.run_performance_test()
 
-    async def run_performance_test(
-        self, total_queries: int = 100
-    ) -> AsyncGenerator[bytes, None]:
-        """
-        Execute multiple search queries and yield progress updates
-
-        Args:
-            total_queries: Number of queries to execute (default: 10)
-
-        Yields:
-            bytes: Server-Sent Event formatted progress updates
-        """
-        total_time = 0
-        results_count = 0
-        query_times: List[float] = (
-            []
-        )  # Store all query times for percentile calculation
-
-        for i in range(total_queries):
-            start_time = time.time()
-            results_count = self.employee_service.get_john_smith_count()
-            end_time = time.time()
-            query_time = (end_time - start_time) * 1000  # Convert to ms
-            total_time += query_time
-            query_times.append(query_time)
-
-            progress_data = self._create_progress_data(
-                i + 1, total_queries, query_time, total_time, results_count
-            )
-
-            message = f"data: {json.dumps(progress_data)}\n\n"
-            yield message.encode("utf-8")
-
-            # Yield control to the event loop, allowing FastAPI to send the buffered data immediately
-            await asyncio.sleep(0)
-
-        final_result = self._create_final_result(
-            total_time, total_queries, results_count, query_times
+        return StreamingResponse(
+            progress_generator,
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "*",
+                "X-Accel-Buffering": "no",
+            },
         )
-        message = f"data: {json.dumps(final_result)}\n\n"
-        yield message.encode("utf-8")
 
-    def _create_progress_data(
-        self,
-        current: int,
-        total: int,
-        query_time: float,
-        total_time: float,
-        results_count: int,
-    ) -> dict:
-        """
-        Create progress data structure
-
-        Args:
-            current: Current query number
-            total: Total queries to execute
-            query_time: Time for current query in ms
-            total_time: Cumulative time in ms
-            results_count: Number of results found
-
-        Returns:
-            dict: Progress data structure
-        """
-        return {
-            "progress": current,
-            "total": total,
-            "percentage": round((current / total) * 100, 1),
-            "current_query_time": round(query_time, 2),
-            "total_time": round(total_time, 2),
-            "results_count": results_count,
-            "status": "running",
-        }
-
-    def _create_final_result(
-        self,
-        total_time: float,
-        total_queries: int,
-        results_count: int,
-        query_times: List[float],
-    ) -> dict:
-        """
-        Create final result data structure with percentile metrics
-
-        Args:
-            total_time: Total execution time in ms
-            total_queries: Number of queries executed
-            results_count: Number of results found
-            query_times: List of all individual query times in ms
-
-        Returns:
-            dict: Final result data structure with percentiles
-        """
-        # Sort query times for percentile calculation
-        sorted_times = sorted(query_times)
-
-        return {
-            "status": "completed",
-            "total_execution_time_ms": round(total_time, 2),
-            "p50_ms": round(self._percentile(sorted_times, 50), 2),
-            "p95_ms": round(self._percentile(sorted_times, 95), 2),
-            "p99_ms": round(self._percentile(sorted_times, 99), 2),
-            "queries_executed": total_queries,
-            "results_count": results_count,
-        }
-
-    def _percentile(self, sorted_data: List[float], percentile: float) -> float:
-        """
-        Calculate percentile from sorted data
-
-        Args:
-            sorted_data: List of values in ascending order
-            percentile: Percentile to calculate (0-100)
-
-        Returns:
-            float: Percentile value
-        """
-        if not sorted_data:
-            return 0.0
-
-        index = (percentile / 100) * (len(sorted_data) - 1)
-        lower_index = int(index)
-        upper_index = lower_index + 1
-
-        if upper_index >= len(sorted_data):
-            return sorted_data[lower_index]
-
-        # Linear interpolation between values
-        weight = index - lower_index
-        return (
-            sorted_data[lower_index] * (1 - weight) + sorted_data[upper_index] * weight
-        )
+    except SQLAlchemyError as e:
+        logger.error("Database error in performance_test endpoint: %s}", str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="Database error occurred during performance test",
+        ) from e
+    except Exception as e:
+        logger.error("Unexpected error in performance_test endpoint: %s", str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred during performance test",
+        ) from e
