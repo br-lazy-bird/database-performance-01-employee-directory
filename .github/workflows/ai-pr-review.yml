@@ -30,6 +30,15 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install openai
 
+      
+      - name: Debug OpenAI secret presence
+        run: |
+          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+          echo "OPENAI_API_KEY is NOT available"
+          else
+          echo "OPENAI_API_KEY is available"
+          fi
+
 
       - name: Test OpenAI connection
         env:
