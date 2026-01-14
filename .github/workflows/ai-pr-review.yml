@@ -1,0 +1,14 @@
+name: AI PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Hello world
+        run: echo "AI PR Review workflow triggered"
+
