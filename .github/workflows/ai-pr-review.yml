@@ -33,7 +33,7 @@ jobs:
       
       - name: Debug OpenAI secret presence
         run: |
-          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+          if [ -z "${{ secrets.KEY_TESTE }}" ]; then
           echo "OPENAI_API_KEY is NOT available"
           else
           echo "OPENAI_API_KEY is available"
