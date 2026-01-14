@@ -8,6 +8,10 @@ jobs:
   review:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Hello world
         run: echo "AI PR Review workflow triggered"
