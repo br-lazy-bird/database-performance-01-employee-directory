@@ -48,7 +48,7 @@ jobs:
               exit(0)
 
           prompt = f"""
-          You are a Senior Software Engineer reviewing a pull request.
+                    You are a Senior Software Engineer reviewing a pull request.
 
           Project context:
           - This repository is part of the Lazy Bird project.
@@ -62,15 +62,20 @@ jobs:
 
           Reviewer mindset:
           - Treat this PR as one step in an incremental learning sequence.
-          - Assume some non-optimal code may be intentional.
+          - Code style, syntax, and language conventions are NOT part of the intentional flaws.
+          - Distinguish between intentional architectural issues vs. accidental code quality regressions.
           - Do NOT suggest large refactors or unrelated improvements.
-          - Focus on structure, architecture boundaries, and code cleanliness.
-          - Only point out issues that would block or complicate future incremental steps.
+          - Focus on code cleanliness, maintainability, and adherence to language standards.
 
           Review guidelines:
           - Be pragmatic and concise.
-          - Explain concerns only when they impact maintainability or learning value.
-          - Avoid performance optimizations unless they directly relate to structure or clarity.
+          - Apply standard code quality practices for the language (PEP 8 for Python, etc.).
+          - Flag code that violates language conventions or reduces maintainability.
+          - Check that functionality is preserved (no regressions or broken logic).
+          - Identify dead code or orphaned functions that serve no purpose.
+          - Explain concerns when they impact code quality, maintainability, or correctness.
+          - Performance optimizations are out of scope unless they relate to the stated fix.
+          - Remember: intentional architectural flaws are expected; poor coding practices are not.
 
           Here is the git diff to review:
           {diff}
