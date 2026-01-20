@@ -84,9 +84,21 @@ The system will:
 
 ---
 
+## Meet the Lazy Bird
+
+> The Lazy Bird is a peculiar creature. It has an exceptional talent for catching bugs... but absolutely zero motivation to fix them. You'll find it wandering around codebases, spotting issues, and then immediately looking for someone else to do the hard work.
+>
+> Today, it found you.
+
+---
+
 ## The Problem
 
-When you run the application and execute the **Performance Test**, you'll notice the system performs poorly. The test executes multiple search queries and measures the time taken.
+> "Hey... so HR asked me to check on this employee directory thing. They say searching for people is taking forever. Like, really forever."
+>
+> "I ran a few queries myself and... yeah, it's slow. We have a million employees in there and every search feels like watching paint dry."
+>
+> "I'm pretty sure it's something in the database, but I have a very important appointment with my couch in 5 minutes, so... could you take a look? Run that performance test and see what you can find. Thanks!"
 
 **Your Mission:**
 1. Investigate why the searches are slow

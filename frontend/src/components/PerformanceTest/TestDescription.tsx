@@ -3,16 +3,15 @@ import React from 'react';
 const TestDescription: React.FC = () => {
   return (
     <div className="description">
-      <p>
-        Our employee directory has been receiving complaints about slow search performance. 
-        Users report that searching for employees takes longer than expected, impacting 
-        their daily productivity.
-      </p>
-      <p>
-        Run this performance test to measure how the system is actually performing under 
-        typical search workloads. The test will help us understand the extent of the 
-        performance issue and establish a baseline for improvement.
-      </p>
+      <div className="dialogue">
+        <img src="/lazy-bird.png" alt="Lazy Bird" className="mascot-icon" />
+        <p>
+          "So, this is the employee directory I mentioned in the <a href="https://github.com/br-lazy-bird/database-performance-01-employee-directory/blob/main/README.md#the-problem" target="_blank" rel="noopener noreferrer">README</a>...
+          HR says searching for people is taking forever. We have a million employees in there and every search feels like watching paint dry.
+          I'm pretty sure it's something in the database, but I have a very important appointment with my couch, so...
+          could you run that performance test and see what you can find? Thanks!"
+        </p>
+      </div>
     </div>
   );
 };
