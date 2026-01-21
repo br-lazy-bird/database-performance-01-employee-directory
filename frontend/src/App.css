@@ -35,7 +35,7 @@
 }
 
 .button {
-  background: #2563eb;
+  background: #059669;
   color: white;
   border: none;
   border-radius: 8px;
@@ -47,9 +47,9 @@
 }
 
 .button:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #047857;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
 }
 
 .button:active:not(:disabled) {
@@ -87,7 +87,7 @@
 .progressPercentage {
   font-size: 18px;
   font-weight: 600;
-  color: #2563eb;
+  color: #059669;
 }
 
 /* Progress Bar */
@@ -102,7 +102,7 @@
 
 .progressBarFill {
   height: 100%;
-  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  background: linear-gradient(90deg, #059669 0%, #10b981 100%);
   transition: width 0.3s ease;
   border-radius: 12px;
 }
@@ -135,8 +135,8 @@
 
 /* Results Container */
 .resultsContainer {
-  background: #f0f9ff;
-  border: 2px solid #2563eb;
+  background: #ecfdf5;
+  border: 2px solid #059669;
   border-radius: 8px;
   padding: 24px;
   text-align: center;
