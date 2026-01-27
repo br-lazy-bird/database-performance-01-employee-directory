@@ -90,8 +90,7 @@ With indexes on `first_name` and `last_name`:
 
 If you want to learn more about database indexes:
 
-- **PostgreSQL Official Documentation - Indexes:** https://www.postgresql.org/docs/current/indexes.html
-- **Use The Index, Luke (e-book):** https://use-the-index-luke.com/ - Excellent free resource on database indexing
+- [Lazy Bird Blog - Database Indexes](https://lazybird.com.br/blog/2025-10-01-lazy-bird---database-indexes/)
 
 ---
 
