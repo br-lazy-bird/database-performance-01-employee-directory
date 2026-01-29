@@ -167,27 +167,23 @@ Execution took ~278 ms, with most time spent scanning.
 
 ### Creating the Missing Indexes
 
-The solution is to create indexes on the columns being searched. There are two approaches you can take:
+The solution is to create indexes on the columns being searched. There are two types of indexes you can create:
 
-#### Approach 1: Composite Index (Recommended)
+#### Composite Index (Recommended)
 
 A composite index indexes multiple columns together. This is ideal when queries always search both columns simultaneously:
-
-```bash
-make db-shell
-```
 
 ```sql
 CREATE INDEX idx_employees_first_last_name ON employees (first_name, last_name);
 ```
 
-**Why this approach is better for this use case:**
+**Why this is better for this use case:**
 - The application always searches `first_name AND last_name` together
 - Single index lookup is more efficient than combining two indexes
 - Better performance for this specific query pattern
 - More efficient use of disk space
 
-#### Approach 2: Separate Single-Column Indexes
+#### Separate Single-Column Indexes
 
 Alternatively, you can create individual indexes on each column:
 
@@ -203,11 +199,43 @@ CREATE INDEX idx_employees_last_name ON employees (last_name);
 
 **For this exercise, either approach will dramatically improve performance.** However, the composite index is more optimal since the application only searches both columns together.
 
-#### Alternative: Adding the Index to the Schema File
+---
 
-Instead of creating the index manually via `db-shell`, you can add the `CREATE INDEX` statement to the schema file at `database/01-schema.sql`. This makes the index part of the database initialization.
+### How to Apply the Index
 
-**Note:** If you choose this approach, you'll need to rebuild the project with `make build` to apply the schema changes (this will recreate the database from scratch).
+#### Option 1: Schema File (Recommended)
+
+In production, database changes should be version controlled and reproducible. Add the `CREATE INDEX` statement to the schema file at `database/01-schema.sql`:
+
+```sql
+CREATE INDEX idx_employees_first_last_name ON employees (first_name, last_name);
+```
+
+Then rebuild the project to apply the schema changes:
+
+```bash
+make build
+```
+
+**Why this is the production approach:**
+- Version controlled and reproducible
+- Works with CI/CD pipelines
+- Shared with all developers
+- Part of the database initialization
+
+#### Option 2: Database Shell (Quick Testing)
+
+For quick testing or learning, you can create the index directly via the database shell without rebuilding:
+
+```bash
+make db-shell
+```
+
+```sql
+CREATE INDEX idx_employees_first_last_name ON employees (first_name, last_name);
+```
+
+**Note:** This approach is useful for experimentation, but changes are lost when the database is recreated.
 
 ### Understanding the Commands
 
