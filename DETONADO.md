@@ -211,10 +211,10 @@ In production, database changes should be version controlled and reproducible. A
 CREATE INDEX idx_employees_first_last_name ON employees (first_name, last_name);
 ```
 
-Then rebuild the project to apply the schema changes:
+Then rebuild the project with fresh volumes, to apply the schema changes:
 
 ```bash
-make build
+make rebuild
 ```
 
 **Why this is the production approach:**

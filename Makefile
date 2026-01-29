@@ -30,6 +30,11 @@ build:
 	@echo "Building and starting application..."
 	docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) up --build -d
 
+rebuild:
+	@echo "Rebuilding with fresh volumes..."
+	docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) down -v
+	docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) up --build -d
+
 stop:
 	@echo "Stopping application..."
 	docker compose -f $(COMPOSE_FILE) --env-file $(ENV_FILE) down
