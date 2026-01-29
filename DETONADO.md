@@ -205,7 +205,7 @@ CREATE INDEX idx_employees_last_name ON employees (last_name);
 
 #### Option 1: Schema File (Recommended)
 
-In production, database changes should be version controlled and reproducible. Add the `CREATE INDEX` statement to the schema file at `database/01-schema.sql`:
+In production, database changes should be version controlled and reproducible. Add the `CREATE INDEX` statement to the schema file at `database/init-dev/01-schema.sql`:
 
 ```sql
 CREATE INDEX idx_employees_first_last_name ON employees (first_name, last_name);
