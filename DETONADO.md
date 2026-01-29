@@ -203,6 +203,12 @@ CREATE INDEX idx_employees_last_name ON employees (last_name);
 
 **For this exercise, either approach will dramatically improve performance.** However, the composite index is more optimal since the application only searches both columns together.
 
+#### Alternative: Adding the Index to the Schema File
+
+Instead of creating the index manually via `db-shell`, you can add the `CREATE INDEX` statement to the schema file at `database/01-schema.sql`. This makes the index part of the database initialization.
+
+**Note:** If you choose this approach, you'll need to rebuild the project with `make build` to apply the schema changes (this will recreate the database from scratch).
+
 ### Understanding the Commands
 
 **What these commands do:**
